@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" type="text/css" href="easydropdown.css" />
+</head>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+    
+    div[id*='player'] {
+        float: left;
+        padding: 5px;
+        position: relative;
+    }
+    
+    #main {
+        height: 100%;
+        overflow: hidden;
+        padding: 10px;
+        background: #000;
+        min-width: 1024px;
+        margin: 0 auto;
+        clear: both;
+    }
+    #searchPanel{
+        height: 38px;
+    }
+    #wrapper{
+        display: inline-block;
+        float: right;
+    }
+    label{
+        display: inline-block;
+        height: 38px;
+        line-height: 38px;
+        vertical-align: top;
+    }
+</style>
+
+<body>
+    <div id="searchPanel">
+       <div id="wrapper">
+            <label>显示视频数：</label>
+            <select id="select1" class="dropdown" onchange="loadVideo()">
+                <option value="3">3</option>
+                <option value="6">6</option>
+                <option value="9">9</option>
+            </select>
+       </div>
+    </div>
+    <div id="main">
+    </div>
+</body>
+<script type="text/javascript" src="jquery-2.1.1.min.js"></script>
+<script type="text/javascript" src="cyberplayer.min.js"></script>
+<script src="jquery.easydropdown.min.js"></script>
+<script>
+    var shareid = "10d6ec520729bad478f83cd1ebfcbe48",
+        uk = 845106100,
+        config = {
+            width: "32%",
+            file: "",
+            stretching: "uniform",
+            controlbar: "bottom",
+            autoStart: true,
+            volume: 0,
+            ak: "9cs3fK8Cpl85idgDa20rXavr",
+            sk: "cQRnu8s2j97IknfL"
+        },
+        list = [{
+                "shareid": "10d6ec520729bad478f83cd1ebfcbe48",
+                "uk": "845106100"
+        },
+            {
+                "shareid": "be1083ab35b98567bb46a5224ab7f124",
+                "uk": "710947327"
+        },
+            {
+                "shareid": "33693eddfdc2e3482721b5e4ab72775e",
+                "uk": "2687848910"
+        },
+            {
+                "shareid": "c20b501fd706900f8d5284ca0b3e84a6",
+                "uk": "1366136788"
+        },
+            {
+                "shareid": "855d2f101c4edabc7eeef8c8dae93aef",
+                "uk": "2120245759"
+        },
+            {
+                "shareid": "ed96a9241658b6f6366fffa5fe2e8c3b",
+                "uk": "4094556429"
+        },
+            {
+                "shareid": "e2e63b40b7355e9e8192b02588375710",
+                "uk": "878364372"
+        },
+            {
+                "shareid": "42f904d242fd6e358a490f97a2013f23",
+                "uk": "2050712015"
+        },
+            {
+                "shareid": "ab8585b5f72cef356091e7d3ec2cfa96",
+                "uk": "878364372"
+        }
+               ];
+
+
+    $.fn.extend({
+        createPlayer: function (shareid, uk) {
+            var $this = $(this),
+                id = $this.get(0).id,
+                player = null,
+                shareid = shareid,
+                uk = uk;
+            $.ajax({
+                url: "https://pcs.baidu.com/rest/2.0/pcs/device",
+                type: "get",
+                dataType: "jsonp",
+                jsonp: "callback",
+                data: {
+                    method: "liveplay",
+                    shareid: shareid,
+                    uk: uk
+                },
+                timeout: 10000,
+                async: true,
+                success: function (data) {
+                    if (data['url']) {
+                        config.file = data['url'];
+                        player = cyberplayer(id).setup(config);
+                    } else {
+                        $this.createPlayer(shareid, uk);
+                    }
+                    player.onBuffer(function (e) {
+                        if (e.oldstate == "PAUSED") {
+                            var newDiv = $("<div id='" + this.id + "'></div>");
+                            $(newDiv).createPlayer(shareid, uk);
+                            $this.replaceWith(newDiv);
+                        }
+                    })
+                    player.onPlay(function () {
+                        this.setControls(true);
+                        this.setMute(true);
+                    });
+                    player.onFullscreen(function () {
+                        this.setControls(true);
+                        if (this.getFullscreen()) {
+                            this.setVolume(50);
+                        } else {
+                            this.setMute(true);
+                        };
+                    });
+                },
+                error: function () {
+                    $this.createPlayer(shareid, uk);
+                }
+            })
+        }
+    });
+    $(function () {
+        createNode(0);
+    })
+    
+    function loadVideo() {
+        var videos = $("#main").find("object").length;
+        var number = $("#select1").val();
+        if(number > videos){
+            createNode(videos);
+        }else if(number < videos){
+            for (var i = videos - 1; i >= number; i--) {
+                $("#main").find("object").eq(i).parent().remove();
+            }
+        }
+    }
+    
+    function createNode() {
+        var number = $("#select1").val();
+        var oFragment = document.createDocumentFragment();
+        for (var i = arguments[0]; i < number; i++) {
+            var div = $("<div id='player" + (i + 1) + "'></div>");
+            $(div).createPlayer(list[i].shareid, list[i].uk);
+            oFragment.appendChild($(div).get(0));
+        }
+        document.getElementById('main').appendChild(oFragment);
+    }
+</script>
+
+</html>
