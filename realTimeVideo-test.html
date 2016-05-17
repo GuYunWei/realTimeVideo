@@ -1,0 +1,285 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>joyshow乐现 - 乐现云摄像头 公共视频直播 - 乐现 百度云系列摄像头，1080P高清网络摄像头</title>
+    <meta name="keywords" content="小度乐现">
+    <meta http-equiv="X-UA-Compatible" content="IE=8" />
+    <meta name="description" content="小度乐现">
+    <link rel="stylesheet" type="text/css" href="easydropdown.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        div[id*='player'] {
+            float: left;
+            padding: 5px;
+            position: relative;
+        }
+
+        #main {
+            height: 100%;
+            overflow: hidden;
+            padding: 10px;
+            background: #000;
+            min-width: 1024px;
+            margin: 0 auto;
+            clear: both;
+        }
+        
+        #container{
+            width: 100%;
+            height: 100%;
+        }
+
+        #searchPanel {
+            height: 38px;
+        }
+
+        #wrapper {
+            display: inline-block;
+            float: right;
+        }
+
+        label {
+            display: inline-block;
+            height: 38px;
+            line-height: 38px;
+            vertical-align: top;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="mian">
+        <div id="searchPanel">
+            <div id="wrapper">
+                <label>显示视频数：</label>
+                <select id="select1" class="dropdown">
+<!--                    <option value="3">3</option>-->
+<!--                    <option value="6">6</option>-->
+                    <option value="9">9</option>
+                </select>
+            </div>
+        </div>
+        <div id="container"></div>
+        <script type="text/javascript" src="jquery-2.1.1.min.js"></script>
+        <script type="text/javascript" src="cyberplayer.min.js"></script>
+        <script src="jquery.easydropdown.min.js"></script>
+        <script>
+            var player = null,
+                viewUrl = null,
+                list = [{
+                        "shareid": "10d6ec520729bad478f83cd1ebfcbe48",
+                        "uk": "845106100"
+                },
+                    {
+                        "shareid": "be1083ab35b98567bb46a5224ab7f124",
+                        "uk": "710947327"
+                        },
+                    {
+                        "shareid": "33693eddfdc2e3482721b5e4ab72775e",
+                        "uk": "2687848910"
+                        },
+                    {
+                        "shareid": "c20b501fd706900f8d5284ca0b3e84a6",
+                        "uk": "1366136788"
+                        },
+                    {
+                        "shareid": "855d2f101c4edabc7eeef8c8dae93aef",
+                        "uk": "2120245759"
+                        },
+                    {
+                        "shareid": "ed96a9241658b6f6366fffa5fe2e8c3b",
+                        "uk": "4094556429"
+                        },
+                    {
+                        "shareid": "e2e63b40b7355e9e8192b02588375710",
+                        "uk": "878364372"
+                        },
+                    {
+                        "shareid": "42f904d242fd6e358a490f97a2013f23",
+                        "uk": "2050712015"
+                        },
+                    {
+                        "shareid": "ab8585b5f72cef356091e7d3ec2cfa96",
+                        "uk": "878364372"
+                        }
+                       ];
+
+            $.fn.extend({
+                createPlayer: function () {
+                    var url = typeof (arguments[0]) != 'undefined' ? arguments[0] : '';
+                    var bLive = typeof (arguments[1]) != 'undefined' ? arguments[1] : true;
+                    var $this = $(this);
+                    var id = $(this).get(0).id;
+//                    if (player != null) {
+//                        player.remove();
+//                        player = null;
+//                    }
+                    if (bLive) {
+                        $(function () {
+                            player = cyberplayer(id).setup({
+                                width: "32%",
+                                //height: 540,
+                                stretching: "uniform",
+                                controlbar: "none",
+                                file: url,
+                                autoStart: true,
+                                repeat: "always",
+                                controlbar: "over",
+                                ak: "9cs3fK8Cpl85idgDa20rXavr",
+                                sk: "cQRnu8s2j97IknfL"
+                            });
+                        });
+                    } else {
+                        player = cyberplayer(id).setup({
+                            width: "32%",
+                            //height: 540,
+                            autoStart: true,
+                            file: url,
+                            type: "m3u8",
+                            controlbar: "over",
+                            ak: "9cs3fK8Cpl85idgDa20rXavr",
+                            sk: "cQRnu8s2j97IknfL"
+                        });
+                    }
+                    player.onBuffer(function (e) {
+                        if (e.oldstate == "PAUSED") {
+                            var id = $(this)[0].id;
+                            var config = $(this)[0].config;
+//                            player.remove();
+                            player = cyberplayer(id).setup(config);
+//                            var newDiv = $("<div id='" + Date.now() + "'></div>");
+//                            $(newDiv).createPlayer(url);
+//                            $this.replaceWith(newDiv);
+                        }
+                    })
+                    player.onPlay(function () {
+                        this.setControls(true);
+                        this.setMute(true);
+                    });
+                    player.onFullscreen(function () {
+                        this.setControls(true);
+                        if (this.getFullscreen()) {
+                            this.setVolume(50);
+                        } else {
+                            this.setMute(true);
+                        };
+                    });
+                    player.onError(function (e) {
+                        getShareViewUrl(shareid, uk, viewCallback);
+                    });
+                    player.onComplete(function (e) {
+                        getShareViewUrl(shareid, uk, viewCallback);
+                    });
+
+                },
+                createVideo: function (url) {
+                    var container = document.getElementById("container"),
+                        video = document.createElement("video"),
+                        source = document.createElement("source");
+                    video.width = 960;
+                    video.height = 540;
+                    video.autoplay = "autoplay";
+                    source.src = url;
+                    video.appendChild(source);
+                    container.appendChild(video);
+                }
+            })
+
+            function viewCallback(data) {
+                if (data['url']) {
+                    if (data['status'] == 0) {
+                        $('#description').html('设备已经离线!');
+                        return;
+                    }
+                    var useragent = navigator.userAgent.toLowerCase();
+                    if (useragent.indexOf("android") != -1 || useragent.indexOf("iphone") != -1) {
+                        $("#container").createVideo(data['url']);
+                    } else {
+                        var div = $("<div id='player" + Date.now() + "'></div>");
+                        $("#container").append($(div));
+                        $(div).createPlayer(data['url']);
+                        //createPlayer(viewUrl);
+                    }
+                } else {
+                    if (data == -1) {
+                        $('#description').html('连接超时,请刷新页面后再次尝试!');
+                    } else {
+                        $('#description').html('设备可能已经被取消分享,请返回上一级页面确认!');
+                        if (player != null) {
+                            player.remove();
+                        }
+                    }
+                }
+            }
+
+            function getShareViewUrl(shareid, uk, callback) {
+                $.ajax({
+                    url: "https://pcs.baidu.com/rest/2.0/pcs/device",
+                    type: "get",
+                    dataType: "jsonp",
+                    jsonp: "callback",
+                    data: {
+                        method: "liveplay",
+                        shareid: shareid,
+                        uk: uk
+                    },
+                    timeout: 10000,
+                    async: true,
+                    success: function (data) {
+                        //checkExpire(data);
+                        callback(data)
+                    },
+                    error: function (XMLHttpRequest, textStatus, errThrown) {
+                        callback(-1)
+                    }
+                })
+            };
+
+            //getShareViewUrl(shareid, uk, viewCallback);
+
+            $(function () {
+                createNode(0);
+            })
+
+            function loadVideo() {
+                var videos = $("#main").find("object").length;
+                var number = $("#select1").val();
+                if (number > videos) {
+                    createNode(videos);
+                } else if (number < videos) {
+                    for (var i = videos - 1; i >= number; i--) {
+                        $("#main").find("object").eq(i).parent().remove();
+                    }
+                }
+            }
+
+            function createNode() {
+                var number = $("#select1").val();
+                var oFragment = document.createDocumentFragment();
+                for (var i = arguments[0]; i < number; i++) {
+                    //var div = $("<div id='player" + (i + 1) + "'></div>");
+                    //$(div).createPlayer(list[i].shareid, list[i].uk);
+                    //oFragment.appendChild($(div).get(0));
+                    getShareViewUrl(list[i].shareid, list[i].uk, viewCallback);
+                }
+                //document.getElementById('main').appendChild(oFragment);
+            }
+        </script>
+
+        <div class="le2_zxkk_bg">
+            <span id="description"></span>
+        </div>
+    </div>
+
+
+
+
+</body>
+
+</html>
