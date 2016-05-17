@@ -63,9 +63,7 @@
 <script type="text/javascript" src="cyberplayer.min.js"></script>
 <script src="jquery.easydropdown.min.js"></script>
 <script>
-    var shareid = "10d6ec520729bad478f83cd1ebfcbe48",
-        uk = 845106100,
-        config = {
+    var config = {
             width: "32%",
             file: "",
             stretching: "uniform",
@@ -159,12 +157,6 @@
                             this.setMute(true);
                         };
                     });
-                    player.onError(function (e) {
-                        getShareViewUrl(shareid, uk, viewCallback);
-                    });
-                    player.onComplete(function (e) {
-                        getShareViewUrl(shareid, uk, viewCallback);
-                    });
                 },
                 error: function () {
                     $this.createPlayer(shareid, uk);
@@ -172,14 +164,6 @@
             })
         },
         createVideo: function (shareid, uk) {
-            var playercontainer = document.getElementById("main"),
-                video = document.createElement("video"),
-                source = document.createElement("source"),
-                $this = $(this);
-            video.width = 960;
-            video.height = 540;
-            video.autoplay = "autoplay";
-            
             $.ajax({
                 url: 'https://pcs.baidu.com/rest/2.0/pcs/device',
                 type: "get",
@@ -190,49 +174,28 @@
                     type: 'hls'
                 },
                 dataType: "jsonp",
-                jsonpCallback: 'jsonpCallback',
+                //jsonpCallback: 'jsonpCallback',
                 success: function (data) {
+                    if (data['status'] == 0) {
+                        console.log('设备已经离线!');
+                        return;
+                    }
                     $("#main").append(data['div']);
-//                    $('#main').css('height', $('#main').width() * 9 / 16);
-//                    $("#main span").text(data.description);
-//                    init_player(300, 200);
+                    //$('#main').css('height', $('#main').width() * 9 / 16);
+                    //$("#main span").text(data.description);
+                    //init_player(300, 200);
                 },
                 error: function (XMLHttpRequest, textStatus, errThrown) {
-//                    if (XMLHttpRequest.status != 200) {
-//                        if (count >= 0) {
-//                            --count;
-//                            loadVideo();
-//                        } else {
-//                            location.reload();
-//                        }
-//                    }
+                    if (XMLHttpRequest.status != 200) {
+                        if (count >= 0) {
+                            --count;
+                            createVideo(shareid, uk);
+                        } else {
+                            location.reload();
+                        }
+                    }
                 }
             })
-
-//            $.ajax({
-//                url: "https://pcs.baidu.com/rest/2.0/pcs/device",
-//                type: "get",
-//                dataType: "jsonp",
-//                jsonp: "callback",
-//                jsonpCallback: 'jsonpCallback',
-//                data: {
-//                    method: "liveplay",
-//                    shareid: shareid,
-//                    uk: uk,
-//                    type: "hls"
-//                },
-//                timeout: 10000,
-//                async: true,
-//                success: function (data) {
-//                    source.src = data['url'];
-//                    video.appendChild(source);
-//                    playercontainer.appendChild(video);
-//                },
-//                error: function () {
-//                    $this.createVideo(shareid, uk);
-//                }
-//            })
-
         }
     });
 
@@ -241,7 +204,7 @@
     })
 
     function loadVideo() {
-        var videos = $("#main").find("object").length;
+        var videos = $("#main").find("object").length || $("#main").find("video").length;
         var number = $("#select1").val();
         if (number > videos) {
             createNode(videos);
@@ -271,38 +234,6 @@
 
     }
 
-    function loadVideo() {
-
-        $.ajax({
-            url: liveUrl,
-            type: "get",
-            data: {
-                method: "liveplay",
-                shareid: '80ef9474abbc61d13872251c8c780b62',
-                uk: '4000374914',
-                type: 'hls'
-            },
-            dataType: "jsonp",
-            jsonpCallback: 'jsonpCallback',
-            success: function (data) {
-                $("#body").append(data['div']);
-                $('#body').css('height', $('#body').width() * 9 / 16);
-                $(".header span").text(data.description);
-                init_player();
-            },
-            error: function (XMLHttpRequest, textStatus, errThrown) {
-                if (XMLHttpRequest.status != 200) {
-                    if (count >= 0) {
-                        --count;
-                        loadVideo();
-                    } else {
-                        location.reload();
-                    }
-                }
-            }
-        })
-
-    }
 </script>
 
 </html>
