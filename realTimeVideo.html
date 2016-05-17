@@ -192,6 +192,7 @@
                 timeout: 10000,
                 async: true,
                 success: function (data) {
+                    alert(data['url']);
                     source.src = data['url'];
                     video.appendChild(source);
                     playercontainer.appendChild(video);
