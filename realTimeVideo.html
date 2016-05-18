@@ -6,42 +6,14 @@
     <link rel="stylesheet" type="text/css" href="easydropdown.css" />
 </head>
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-    }
-    
-    div[id*='player'] {
-        float: left;
-        padding: 5px;
-        position: relative;
-    }
-    
-    #main {
-        height: 100%;
-        overflow: hidden;
-        padding: 10px;
-        background: #000;
-        min-width: 1024px;
-        margin: 0 auto;
-        clear: both;
-    }
-    
-    #searchPanel {
-        height: 38px;
-    }
-    
-    #wrapper {
-        display: inline-block;
-        float: right;
-    }
-    
-    label {
-        display: inline-block;
-        height: 38px;
-        line-height: 38px;
-        vertical-align: top;
-    }
+    * { margin: 0; padding: 0; }
+    div[id*='player'] { float: left; padding: 5px; position: relative; }
+    #main { height: 100%; overflow: hidden; padding: 10px;min-width: 1024px; margin: 0 auto; clear: both; }
+    #searchPanel { height: 38px; }
+    #wrapper { display: inline-block; float: right; }
+    label { display: inline-block; height: 38px; line-height: 38px; vertical-align: top; }
+    .tip{position:absolute;color:white;white-space:nowrap;}
+    .error-tip{display:table-cell;width:300px;height:270px;background:black;color:white;text-align:center;vertical-align:middle;}
 </style>
 
 <body>
@@ -49,8 +21,8 @@
         <div id="wrapper">
             <label>显示视频数：</label>
             <select id="select1" class="dropdown" onchange="loadVideo()">
-                <option value="3">3</option>
-                <option value="6">6</option>
+<!--                <option value="3">3</option>-->
+<!--                <option value="6">6</option>-->
                 <option value="9">9</option>
             </select>
         </div>
@@ -135,8 +107,22 @@
                     if (data['url']) {
                         config.file = data['url'];
                         player = cyberplayer(id).setup(config);
+                        if (data['status'] == 0) {
+                            player.stop();
+                            $('#' + id + '_wrapper').append('<div class="tip" style="top:50%;left:50%;transform:translate(-50%,-50%);">' + data['description'] + '设备已离线!</div>');
+                        } else {
+                            $('#' + id + '_wrapper').append('<div class="tip" style="top:5px;right:5px;font-size:12px;">' + data['description'] + '</div>');
+                        }
                     } else {
-                        $this.createPlayer(shareid, uk);
+                        //$this.createPlayer(shareid, uk);
+                        if (data == -1) {
+                            $this.append('<div id="player-error" class="error-tip">连接超时,请刷新页面后再次尝试!</div>');
+                        } else {
+                            $this.append('<div id="player-error" class="error-tip">设备可能已经被取消分享,请返回上一级页面确认!</div>');
+                            if (player != null) {
+                                player.remove();
+                            }
+                        }
                     }
                     player.onBuffer(function (e) {
                         if (e.oldstate == "PAUSED") {
@@ -164,6 +150,7 @@
             })
         },
         createVideo: function (shareid, uk) {
+            var $this = $(this);
             $.ajax({
                 url: 'https://pcs.baidu.com/rest/2.0/pcs/device',
                 type: "get",
@@ -176,24 +163,27 @@
                 dataType: "jsonp",
                 //jsonpCallback: 'jsonpCallback',
                 success: function (data) {
+                    var div = data['div'];
+                    $("#main").append(div);
                     if (data['status'] == 0) {
-                        console.log('设备已经离线!');
-                        return;
+//                        $("#main").append('<div>' + data['description'] + '设备已经离线!</div>');
+                        $("#main video").last().before('<div class="tip" style="top:50%;left:50%;transform:translate(-50%,-50%);">' + data['description'] + '设备已经离线!</div>');
+                    }else {
+                        $("#main video").last().before('<div class="tip" style="top:5px;right:5px;">' + data['description'] + '</div>');
                     }
-                    $("#main").append(data['div']);
                     //$('#main').css('height', $('#main').width() * 9 / 16);
                     //$("#main span").text(data.description);
                     //init_player(300, 200);
                 },
                 error: function (XMLHttpRequest, textStatus, errThrown) {
-                    if (XMLHttpRequest.status != 200) {
-                        if (count >= 0) {
-                            --count;
-                            createVideo(shareid, uk);
-                        } else {
-                            location.reload();
-                        }
-                    }
+//                    if (XMLHttpRequest.status != 200) {
+//                        if (count >= 0) {
+//                            --count;
+//                            createVideo(shareid, uk);
+//                        } else {
+//                            location.reload();
+//                        }
+//                    }
                 }
             })
         }
@@ -211,6 +201,7 @@
         } else if (number < videos) {
             for (var i = videos - 1; i >= number; i--) {
                 $("#main").find("object").eq(i).parent().remove();
+                $("#main").find("video").eq(i).parent().remove();
             }
         }
     }
@@ -225,7 +216,7 @@
         } else {
             var oFragment = document.createDocumentFragment();
             for (var i = arguments[0]; i < number; i++) {
-                var div = $("<div id='player" + (i + 1) + "'></div>");
+                var div = $("<div id='player" + (i + 1) + "' style='width:32%'></div>");
                 $(div).createPlayer(list[i].shareid, list[i].uk);
                 oFragment.appendChild($(div).get(0));
             }
@@ -233,7 +224,6 @@
         }
 
     }
-
 </script>
 
 </html>
